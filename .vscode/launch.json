@@ -1,0 +1,35 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FastAPI: Uvicorn",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "main:app",
+        "--reload"
+      ],
+      "jinja": true,
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Run Streamlit App",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.venv/bin/streamlit", // or "streamlit" if globally installed
+      // "args": ["run", "ui/chatbot.py", "--server.runOnSave=true"],
+      "args": [
+        "run",
+        "ui/chatbot.py"
+      ],
+      "env": {
+        "STREAMLIT_SERVER_HEADLESS": "true"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}

@@ -1,20 +1,18 @@
+from typing import Any
+
 from sqlalchemy import (
-    create_engine,
     Column,
+    DateTime,
+    Index,
     Integer,
     String,
     Text,
-    DateTime,
-    Index,
     text,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-from typing import List, Dict, Any
-import os
-from infrastructure.database_manager import DatabaseManager
 
+from infrastructure.database_manager import DatabaseManager
 
 Base = declarative_base()
 
@@ -64,33 +62,37 @@ class EmailRepository:
         """Initialize the database and create tables."""
         Email.create_schema(self.db_manager.engine)
 
-    def update_emails(self, emails: List[Dict[str, Any]]) -> List[int]:
+    def update_emails(self, emails: list[dict[str, Any]]) -> list[int]:
         """
-        the parameter emails will be id and fields like summary, sender_name, amount etc.
-        we will update the email with the given id and the fields.
-        use sqlalchemy to update the email. and do bulk operation without any for loop
+        Update emails with annotated fields using bulk operations.
+
+        Args:
+            emails: List of email dictionaries with id and fields to update
+
+        Returns:
+            List of updated email IDs
         """
         session = self.db_manager.get_session()
         try:
-            for email in emails:
-                session.execute(
-                    text(
-                        """
-                        UPDATE emails SET 
-                            summary = :summary, 
-                            amount = :amount,
-                            email_type = :email_type,
-                            category = :category,
-                            vendor = :vendor,
-                            item = :item,
-                            source = :source,
-                            destination = :destination,
-                            updated_at = datetime('now')
-                        WHERE id = :id
-                        """
-                    ),
-                    email,
-                )
+            # Use bulk update with executemany for better performance
+            session.execute(
+                text(
+                    """
+                    UPDATE emails SET
+                        summary = :summary,
+                        amount = :amount,
+                        email_type = :email_type,
+                        category = :category,
+                        vendor = :vendor,
+                        item = :item,
+                        source = :source,
+                        destination = :destination,
+                        updated_at = datetime('now')
+                    WHERE id = :id
+                    """
+                ),
+                emails,
+            )
             session.commit()
             return [email.get("id", "") for email in emails]
         except Exception as e:
@@ -99,7 +101,7 @@ class EmailRepository:
         finally:
             session.close()
 
-    def store_emails(self, emails: List[Dict[str, Any]]) -> List[int]:
+    def store_emails(self, emails: list[dict[str, Any]]) -> list[int]:
         """
         Store a list of emails using batch insertion.
 
@@ -143,8 +145,8 @@ class EmailRepository:
                 text(
                     """
                 INSERT INTO emails (
-                    subject, sender_name, sender_email, date, body, email_type, category, 
-                    vendor, item, source, destination, 
+                    subject, sender_name, sender_email, date, body, email_type, category,
+                    vendor, item, source, destination,
                     amount, summary
                 ) VALUES (
                     :subject, :sender_name, :sender_email, :date, :body, :email_type, :category,
@@ -170,8 +172,8 @@ class EmailRepository:
             session.close()
 
     def get_emails(
-        self, start: int = 0, limit: int = 100, projected_fields: List[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, start: int = 0, limit: int = 100, projected_fields: list[str] = None
+    ) -> list[dict[str, Any]]:
         """
         Get emails with pagination.
 

@@ -1,6 +1,7 @@
+from typing import Optional
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Optional
 
 
 class DatabaseManager:
@@ -11,7 +12,7 @@ class DatabaseManager:
 
     def __new__(cls, db_path: str = "emails.db"):
         if cls._instance is None:
-            cls._instance = super(DatabaseManager, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, db_path: str = "emails.db"):
