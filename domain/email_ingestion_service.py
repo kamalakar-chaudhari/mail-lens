@@ -1,11 +1,12 @@
-from email import policy
-import mailbox
 import itertools
+import mailbox
+from email import policy
 from email.parser import BytesParser
-from email.policy import default
-from io import BytesIO
-from bs4 import BeautifulSoup
 from email.utils import parseaddr
+from io import BytesIO
+
+from bs4 import BeautifulSoup
+
 from domain.email_repository import EmailRepository
 
 

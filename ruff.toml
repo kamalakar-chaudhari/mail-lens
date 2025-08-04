@@ -1,0 +1,17 @@
+target-version = "py311"
+line-length = 88
+fix = true
+exclude = ["migrations", "__pycache__", "build", "dist", ".venv"]
+
+
+[lint]
+select = ["E", "F", "I", "UP", "W"]  # pycodestyle, pyflakes, isort, pyupgrade
+ignore = ["E501"]  # Ignore long lines (optional)
+
+
+# Enable formatting if Ruff is used as formatter
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
