@@ -23,6 +23,10 @@ dependencies = [
     "sqlalchemy (>=2.0.0,<3.0.0)",
     "pydantic (>=2.0.0,<3.0.0)",
     "pandas (>=2.0.0,<2.3.0)",
+    "llama-index-vector-stores-qdrant (>=0.4.0)",
+    "qdrant-client (>=1.7.0)",
+    "chromadb (>=0.4.0)",  # Alternative to Qdrant
+    "llama-index-embeddings-huggingface (>=0.6.0,<0.7.0)",
 ]
 
 [tool.poetry]

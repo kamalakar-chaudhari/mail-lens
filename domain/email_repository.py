@@ -44,7 +44,14 @@ class Email(Base):
     )
 
     # Create indexes for better performance
-    __table_args__ = (Index("idx_emails_created_at", "created_at"),)
+    __table_args__ = (
+        Index("idx_emails_created_at", "created_at"),
+        Index("idx_emails_sender_email", "sender_email"),
+        Index("idx_emails_subject", "subject"),
+        Index("idx_emails_email_type", "email_type"),
+        Index("idx_emails_category", "category"),
+        Index("idx_emails_vendor", "vendor"),
+    )
 
     @classmethod
     def create_schema(cls, engine):

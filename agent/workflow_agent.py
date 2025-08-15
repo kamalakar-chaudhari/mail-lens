@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from llama_index.core import SQLDatabase
+from llama_index.core.llms import ChatMessage
 from llama_index.core.query_engine import NLSQLTableQueryEngine
 from llama_index.core.workflow import Event, StartEvent, StopEvent, Workflow, step
 from llama_index.llms.openai import OpenAI
@@ -79,9 +80,9 @@ def fetch_data_from_db(llm_query: str) -> str:
         4. The currency is always INR.
         5. You must always return the matching rows along with the information requested in the query.
         6. Do not return id field in the response - as it is just a unique identifier.
-        7. Project summary field in the sql query.
+        7. Project all the fields that might be relevant to the query.
         """
-        llm = OpenAI(model="gpt-4o-mini", system_prompt=system_prompt)
+        llm = OpenAI(model="gpt-5-mini", system_prompt=system_prompt)
 
         import pandas as pd
 
@@ -116,7 +117,7 @@ def get_similar_embeddings(query: str, top_k: int = 5) -> str:
 
         # Search for similar emails
         results = vector_service.search_similar_emails(
-            query=query, top_k=top_k, similarity_threshold=0.7
+            query=query, top_k=top_k, similarity_threshold=0.5
         )
 
         if not results:
@@ -129,6 +130,7 @@ def get_similar_embeddings(query: str, top_k: int = 5) -> str:
             result += f"{i}. Score: {result_item['score']:.3f}\n"
             result += f"   Subject: {metadata.get('subject', 'N/A')}\n"
             result += f"   Content: {result_item['content'][:300]}...\n\n"
+            result += f"   Metadata: {metadata}\n"
 
         return result
     except Exception as e:
@@ -141,30 +143,34 @@ def generate_final_response(user_query: str, data_result: str) -> str:
     Generate a final response based on the user query and the data result from previous steps.
     """
     try:
-        system_prompt = """
-        You are a helpful assistant that provides clear, concise answers based on the data provided.
-        Analyze the user's query and the data result, then provide a comprehensive answer.
+        system_prompt = (
+            "You are an expert assistant. Your task is to answer the user's query using ONLY the provided data results. "
+            "Carefully analyze the user's question and the data. "
+            "If the data contains relevant information, summarize the key findings with specific details (such as IDs, dates, or main fields) and explain their relevance. "
+            "If no relevant data is found, clearly state that there are no matching results. "
+            "If there are errors or inconsistencies in the data, acknowledge them and explain their impact. "
+            "Keep your answer concise, accurate, and user-friendly. "
+            "Do not make assumptions or add information not present in the data. "
+            "Present your answer as a short paragraph, bullet points, or a compact table as appropriate."
+            "Do not show ID in the response. It is just a unique identifier."
+        )
 
-        Guidelines:
-        1. Be concise but informative
-        2. If the data shows no results, clearly state that
-        3. If there are errors in the data, acknowledge them
-        4. Format your response in a user-friendly way
-        5. Include relevant statistics or insights when appropriate
-        """
-
-        llm = OpenAI(model="gpt-4o-mini", system_prompt=system_prompt)
-
-        prompt = f"""
-        User Query: {user_query}
-
-        Data Result: {data_result}
-
-        Please provide a clear and helpful response based on the above information.
-        """
-
-        response = llm.complete(prompt)
-        return response.text
+        # Provide the user query and data result as separate, clearly labeled messages
+        messages = [
+            ChatMessage(role="system", content=system_prompt),
+            ChatMessage(role="user", content=f"User Query:\n{user_query}"),
+            ChatMessage(role="user", content=f"Data Result:\n{data_result}"),
+            ChatMessage(
+                role="user",
+                content=(
+                    "Based on the above user query and data result, provide a clear, direct, and helpful answer. "
+                    "If possible, highlight the most relevant data. If nothing matches, say so explicitly."
+                ),
+            ),
+        ]
+        llm = OpenAI(model="gpt-5-mini", temperature=0.0)
+        response = llm.chat(messages)
+        return response.message.content.strip()
     except Exception as e:
         print(f"Error in generate_final_response: {e}")
         return f"Error generating final response: {str(e)}"
@@ -261,7 +267,7 @@ async def main():
         # "What's my total spend on Uber this month?",
         # "Show me emails discussing project deadlines",
         # "show me emails related to cancellations of train tickets",
-        "when did i travel to nagpur?"
+        "emails from my daughter's school"
     ]
 
     # Create workflow instance
