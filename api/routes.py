@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Request
 
-from config.app_context import pf_analyzer_agent
+from config.app_context import workflow_agent
 
 router = APIRouter(prefix="/api", tags=["Chat"])
 
@@ -12,6 +12,5 @@ async def chat_endpoint(request: Request):
     body = await request.json()
     query = body.get("message")
 
-    session_id = request.headers.get("session_id")
-    reply = pf_analyzer_agent.invoke(session_id, query)
+    reply = await workflow_agent.run(input=query)
     return {"reply": reply}

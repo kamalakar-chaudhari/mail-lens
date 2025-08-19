@@ -27,6 +27,8 @@ dependencies = [
     "qdrant-client (>=1.7.0)",
     "chromadb (>=0.4.0)",  # Alternative to Qdrant
     "llama-index-embeddings-huggingface (>=0.6.0,<0.7.0)",
+    "streamlit (>=1.48.1,<2.0.0)",
+    "fastapi (>=0.116.1,<0.117.0)",
 ]
 
 [tool.poetry]

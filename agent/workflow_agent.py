@@ -5,8 +5,8 @@ from llama_index.core.llms import ChatMessage
 from llama_index.core.query_engine import NLSQLTableQueryEngine
 from llama_index.core.workflow import Event, StartEvent, StopEvent, Workflow, step
 
-from config.app_context import db_manager, openai_llm_client
 from domain.vector_store_service import VectorStoreService
+from infrastructure.database_manager import DatabaseManager
 from infrastructure.llm_client import LLMClient
 
 load_dotenv()
@@ -30,10 +30,6 @@ e.g., LOWER(vendor) LIKE '%<value>%'
 7. Project all the fields that might be relevant to the query.
 """
 
-openai_nlsql_llm_client = LLMClient(
-    provider="openai", model="gpt-5-mini", system_prompt=nlsql_system_prompt
-)
-
 
 class SQLQuery(Event):
     user_query: str
@@ -53,8 +49,20 @@ class EmailQueryWorkflow(Workflow):
     A workflow for processing email queries with classification and appropriate data fetching.
     """
 
-    def __init__(self, timeout: float | None = 45.0):
+    def __init__(
+        self,
+        db_manager: DatabaseManager,
+        openai_llm_client: LLMClient,
+        timeout: float | None = 45.0,
+    ):
         super().__init__(timeout=timeout)
+        self.db_manager = db_manager
+        self.openai_llm_client = openai_llm_client
+
+        # Initialize the NLSQL LLM client with the system prompt
+        self.openai_nlsql_llm_client = LLMClient(
+            provider="openai", model="gpt-5-mini", system_prompt=nlsql_system_prompt
+        )
 
     def _classify_query(self, user_query: str) -> str:
         """
@@ -93,7 +101,7 @@ class EmailQueryWorkflow(Workflow):
                 ChatMessage(role="system", content=system_prompt),
                 ChatMessage(role="user", content=user_query),
             ]
-            response = openai_llm_client.chat_content(messages)
+            response = self.openai_llm_client.chat_content(messages)
             return response.lower()
         except Exception as e:
             print(f"Error in classify_query: {e}")
@@ -107,11 +115,13 @@ class EmailQueryWorkflow(Workflow):
         try:
             print("llm_query from fetch_data_from_db", llm_query)
 
-            sql_database = SQLDatabase(db_manager.engine, include_tables=["emails"])
+            sql_database = SQLDatabase(
+                self.db_manager.engine, include_tables=["emails"]
+            )
             query_engine = NLSQLTableQueryEngine(
                 sql_database=sql_database,
                 tables=["emails"],
-                llm=openai_nlsql_llm_client,
+                llm=self.openai_nlsql_llm_client,
                 synthesize_response=False,
             )
             # Get the SQL query string from the LLM
@@ -120,7 +130,7 @@ class EmailQueryWorkflow(Workflow):
             print("Generated SQL query:", sql_query)
 
             # Execute the SQL query directly using pandas
-            with db_manager.engine.connect() as conn:
+            with self.db_manager.engine.connect() as conn:
                 df = pd.read_sql_query(sql_query, conn)
             return df.to_string()
         except Exception as e:
@@ -187,7 +197,7 @@ class EmailQueryWorkflow(Workflow):
                     ),
                 ),
             ]
-            return openai_llm_client.chat_content(messages)
+            return self.openai_llm_client.chat_content(messages)
         except Exception as e:
             print(f"Error in generate_final_response: {e}")
             return f"Error generating final response: {str(e)}"
@@ -243,14 +253,7 @@ class EmailQueryWorkflow(Workflow):
 
 
 # Create a global instance of the workflow
-email_workflow = EmailQueryWorkflow()
-
-
-async def run_workflow(user_query: str):
-    """
-    Run the complete workflow for a user query.
-    """
-    return await email_workflow.run(input=user_query)
+# email_workflow = EmailQueryWorkflow() # This line is removed as per the edit hint
 
 
 # Example usage
@@ -266,7 +269,17 @@ async def main():
     ]
 
     # Create workflow instance
-    workflow = EmailQueryWorkflow(timeout=60)
+    # Note: In a real application, these dependencies would be injected
+    # For testing purposes, we'll create them here
+    from config.constants import EMAILS_DB_PATH
+    from infrastructure.database_manager import DatabaseManager
+    from infrastructure.llm_client import LLMClient
+
+    db_manager = DatabaseManager(EMAILS_DB_PATH)
+    openai_llm_client = LLMClient(provider="openai", model="gpt-5-mini")
+    workflow = EmailQueryWorkflow(
+        db_manager=db_manager, openai_llm_client=openai_llm_client, timeout=60
+    )
 
     for query in test_queries:
         print(f"\n{'=' * 50}")
