@@ -73,44 +73,13 @@ The agent first classifies user queries into two categories:
 - Uses OpenAI to generate natural language responses
 - Provides structured summaries with relevant metadata
 
-### **Workflow Components**
-- **EmailQueryWorkflow**: Main workflow orchestrator using LlamaIndex's Workflow framework
-- **Query Classification**: Determines processing path (SQL vs Vector)
-- **Data Retrieval**: Executes SQL or vector search based on classification
-- **Response Synthesis**: Generates final user-friendly responses
-
 ## Main Technologies Used
 
-### **Core Framework**
-- **LlamaIndex**: Workflow orchestration, agent management, and vector database integration
-- **FastAPI**: High-performance web API framework
-- **Streamlit**: Interactive web interface for Q&A
-
-### **AI/ML Stack**
-- **OpenAI GPT**: Natural language processing and SQL generation
-- **HuggingFace Transformers**: Local embedding models (sentence-transformers/all-MiniLM-L6-v2)
-- **LlamaIndex**: Workflow orchestration, vector database integration, and document processing
-- **Groq**: Alternative LLM provider for email annotation
-
-### **Data Storage**
-- **SQLite**: Structured email data storage
-- **Qdrant**: Vector database for semantic search
-- **Pandas**: Data manipulation and analysis
-
-### **Email Processing**
-- **mail-parser**: Email parsing and metadata extraction
-- **BeautifulSoup**: HTML email content processing
-- **mailbox**: Mbox file handling
-
-### **Development & Deployment**
-- **Poetry**: Dependency management
-- **Ruff**: Code formatting and linting
-- **Python 3.11+**: Modern Python features and performance
-
-### **Infrastructure**
-- **SQLAlchemy**: Database ORM and connection management
-- **Pydantic**: Data validation and serialization
-- **Dotenv**: Environment variable management
+- **Core Framework**: LlamaIndex, FastAPI, Streamlit
+- **AI/ML Stack**: OpenAI GPT, HuggingFace, LlamaIndex, Groq
+- **Data Storage**: SQLite, Qdrant, Pandas
+- **Email Processing**: mail-parser, BeautifulSoup, mailbox
+- **Development & Infrastructure**: Poetry, Ruff, SQLAlchemy, Pydantic, Python 3.11+
 
 ## Getting Started
 
@@ -136,25 +105,10 @@ cp .env.example .env
 
 ### Usage
 
-1. **Ingest Emails**:
-   ```bash
-   python scripts/ingest_emails.py --mbox path/to/your/emails.mbox
-   ```
-
-2. **Build Vector Index**:
-   ```bash
-   python scripts/build_vector_index.py
-   ```
-
-3. **Start the API**:
-   ```bash
-   python main.py
-   ```
-
-4. **Launch the UI**:
-   ```bash
-   streamlit run ui/new_chatbot.py
-   ```
+1. Ingest emails: `python scripts/ingest_emails.py --mbox path/to/your/emails.mbox`
+2. Build vector index: `python scripts/build_vector_index.py`
+3. Start the API: `python main.py`
+4. Launch the UI: `streamlit run ui/new_chatbot.py`
 
 ### Example Queries
 - "Show me all Amazon purchases from last month"
