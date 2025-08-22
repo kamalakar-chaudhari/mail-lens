@@ -12,17 +12,18 @@ Mail-Lens is designed to help users extract meaningful insights from their email
 - **Provide summaries** of email content and patterns
 - **Search across email metadata** including senders, subjects, dates, and categories
 
+![Sample Q&A Interface](assets/sample_q&a.png)
+
 The tool is particularly useful for:
-- Personal finance tracking and expense analysis
 - Travel and booking history
-- Vendor and transaction monitoring
+- Vendor and transaction search
 - Email content discovery and summarization
 
 ## ETL Phase
 
 The system follows a comprehensive ETL (Extract, Transform, Load) pipeline:
 
-![ETL Phase](etl-phase.png)
+![ETL Phase](assets/etl-phase.png)
 
 ### 1. **Extract** - Email Ingestion
 - **Input**: Mbox files (Gmail export format)
@@ -46,7 +47,7 @@ The system follows a comprehensive ETL (Extract, Transform, Load) pipeline:
 
 ## Agent Architecture
 
-The system uses a sophisticated workflow-based agent architecture built with LangGraph:
+The system uses a sophisticated workflow-based agent architecture built with LlamaIndex:
 
 ![Agent Architecture](assets/agent-architecture.png)
 
@@ -73,22 +74,23 @@ The agent first classifies user queries into two categories:
 - Provides structured summaries with relevant metadata
 
 ### **Workflow Components**
-- **EmailQueryWorkflow**: Main workflow orchestrator
-- **Query Classification**: Determines processing path
-- **Data Retrieval**: Executes SQL or vector search
+- **EmailQueryWorkflow**: Main workflow orchestrator using LlamaIndex's Workflow framework
+- **Query Classification**: Determines processing path (SQL vs Vector)
+- **Data Retrieval**: Executes SQL or vector search based on classification
 - **Response Synthesis**: Generates final user-friendly responses
 
 ## Main Technologies Used
 
 ### **Core Framework**
-- **LangGraph**: Workflow orchestration and agent management
+- **LlamaIndex**: Workflow orchestration, agent management, and vector database integration
 - **FastAPI**: High-performance web API framework
 - **Streamlit**: Interactive web interface for Q&A
 
 ### **AI/ML Stack**
 - **OpenAI GPT**: Natural language processing and SQL generation
 - **HuggingFace Transformers**: Local embedding models (sentence-transformers/all-MiniLM-L6-v2)
-- **LlamaIndex**: Vector database integration and document processing
+- **LlamaIndex**: Workflow orchestration, vector database integration, and document processing
+- **Groq**: Alternative LLM provider for email annotation
 
 ### **Data Storage**
 - **SQLite**: Structured email data storage
@@ -156,6 +158,5 @@ cp .env.example .env
 
 ### Example Queries
 - "Show me all Amazon purchases from last month"
-- "What travel expenses did I have in Q1?"
 - "Find emails about project deadlines"
 - "Summarize my email conversations with John"
