@@ -14,7 +14,7 @@ Mail-Lens is designed to help users extract meaningful insights from their email
 
 The tool is particularly useful for:
 - Personal finance tracking and expense analysis
-- Travel planning and booking history
+- Travel and booking history
 - Vendor and transaction monitoring
 - Email content discovery and summarization
 
@@ -48,6 +48,8 @@ The system follows a comprehensive ETL (Extract, Transform, Load) pipeline:
 
 The system uses a sophisticated workflow-based agent architecture built with LangGraph:
 
+![Agent Architecture](assets/agent-architecture.png)
+
 ### **Query Classification**
 The agent first classifies user queries into two categories:
 - **SQL Queries**: For structured data retrieval (filtering, aggregations, exact matches)
@@ -66,7 +68,7 @@ The agent first classifies user queries into two categories:
 - Returns ranked results based on semantic similarity scores
 
 ### **Response Generation**
-- Combines results from both paths when appropriate
+- Gets results from the selected path
 - Uses OpenAI to generate natural language responses
 - Provides structured summaries with relevant metadata
 
@@ -157,5 +159,3 @@ cp .env.example .env
 - "What travel expenses did I have in Q1?"
 - "Find emails about project deadlines"
 - "Summarize my email conversations with John"
-
-## Project Structure
